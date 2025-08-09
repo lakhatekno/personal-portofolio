@@ -22,7 +22,7 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en">
-			<body className={`${openSans.variable} antialiased bg-gradient-to-br from-purple-900 to-slate-800`}>
+			<body className={`${openSans.variable} antialiased bg-gradient-to-br from-purple-900 to-slate-800 w-11/12 md:4/5 mx-auto`}>
         <Header />
         <main className='h-full'>
           {children}
