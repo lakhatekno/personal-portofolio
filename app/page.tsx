@@ -9,7 +9,7 @@ export default function Home() {
     <>
       <Introduction></Introduction>
       {/* <ProjectsShowcase></ProjectsShowcase> */}
-      {/* <TechStack></TechStack> */}
+      <TechStack></TechStack>
       {/* <Certificates></Certificates> */}
       <Contact></Contact>
     </>
