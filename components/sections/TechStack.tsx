@@ -9,6 +9,7 @@ import {
   TbBrandTypescript,
   TbBrandJavascript,
   TbBrandPython,
+  TbBrandNextjs,
 } from 'react-icons/tb';
 
 import TechStackList from '../ui/TechStackList';
@@ -20,7 +21,7 @@ export default function TechStack() {
 				<Gamepad className="scale-150 text-cyan-500 rotate-12" />
 				<h2>Tools & Stacks</h2>
 			</div>
-			<div className='flex w-full flex-wrap gap-4 justify-center lg:justify-between mt-4'>
+			<div className='w-11/12 md:w-4/5 lg:w-1/2 mx-auto mt-12 grid grid-cols-3 space-y-12'>
 				<TechStackList
 					icon={<TbBrandReact />}
 					name="React"
@@ -36,6 +37,11 @@ export default function TechStack() {
 					name="Angular"
 					colorClassName="text-red-500"
 				/>
+        <TechStackList
+					icon={<TbBrandNextjs />}
+					name="Next"
+					colorClassName="text-slate-900"
+				/>
 				<TechStackList
 					icon={<TbBrandTailwind />}
 					name="Tailwind"
@@ -44,7 +50,7 @@ export default function TechStack() {
 				<TechStackList
 					icon={<TbBrandGit />}
 					name="Git"
-					colorClassName="text-orange-300"
+					colorClassName="text-orange-400"
 				/>
 				<TechStackList
 					icon={<TbBrandFigma />}
