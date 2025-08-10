@@ -4,6 +4,7 @@ import './globals.css';
 
 // Component Imports
 import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
 
 const openSans = Open_Sans({
 	variable: '--font-open-sans',
@@ -27,6 +28,7 @@ export default function RootLayout({
         <main className='h-full'>
           {children}
         </main>
+				<Footer />
       </body>
 		</html>
 	);
