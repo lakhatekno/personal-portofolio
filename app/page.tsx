@@ -8,10 +8,10 @@ export default function Home() {
   return (
     <>
       <Introduction></Introduction>
-      {/* <ProjectsShowcase></ProjectsShowcase>
-      <TechStack></TechStack>
-      <Certificates></Certificates>
-      <Contact></Contact> */}
+      {/* <ProjectsShowcase></ProjectsShowcase> */}
+      {/* <TechStack></TechStack> */}
+      {/* <Certificates></Certificates> */}
+      <Contact></Contact>
     </>
   )
 }
