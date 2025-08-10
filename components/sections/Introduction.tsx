@@ -45,7 +45,7 @@ export default function Introduction() {
 		<section className="flex mt-2 h-96 items-center justify-center">
 			<div className="w-fit mx-auto flex flex-col items-start justify-center">
 				<h1 className="text-5xl font-bold text-slate-100">
-					Welcome, Aboard <Sailing className="scale-150 text-cyan-500"></Sailing>
+					Welcome Aboard <Sailing className="scale-150 text-cyan-500"></Sailing>
 				</h1>
 				<div 
           ref={containerRef}
