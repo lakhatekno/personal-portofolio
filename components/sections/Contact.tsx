@@ -6,7 +6,7 @@ import ContactCard from "../ui/ContactCard";
 
 export default function Contact() {
 	return (
-		<section className="felx flex-col">
+		<section className="flex flex-col">
 			<div className="text-3xl font-bold text-slate-100 flex gap-4 items-center justify-center">
 				<EmojiPeople className="scale-150 text-cyan-500" />
 				<h2>Reach Me</h2>

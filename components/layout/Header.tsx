@@ -8,13 +8,13 @@ export default function Header() {
 	];
 
 	return (
-		<header className="bg-transparent sticky top-2 z-50">
+		<header className="bg-transparent sticky top-4 z-50 hidden lg:flex">
 			<div
 				className="
-        
+				backdrop-blur-3xl rounded-full overflow-hidden
         md:w-fit mx-auto px-4 md:px-24 py-3 md:h-16 flex items-center justify-between md:justify-center"
 			>
-				<nav className="hidden md:flex gap-24">
+				<nav className="flex gap-24">
 					{navLinks.map(({ href, name }) => (
 						<div
 							key={href}
