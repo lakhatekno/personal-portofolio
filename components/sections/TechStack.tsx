@@ -25,52 +25,52 @@ export default function TechStack() {
 				<TechStackList
 					icon={<TbBrandReact />}
 					name="React"
-					colorClassName="text-blue-400"
+					colorClassName="hover:text-blue-400"
 				/>
 				<TechStackList
 					icon={<TbBrandLaravel />}
 					name="Laravel"
-					colorClassName="text-red-500"
+					colorClassName="hover:text-red-500"
 				/>
         <TechStackList
 					icon={<TbBrandAngularFilled />}
 					name="Angular"
-					colorClassName="text-red-500"
+					colorClassName="hover:text-red-500"
 				/>
         <TechStackList
 					icon={<TbBrandNextjs />}
 					name="Next"
-					colorClassName="text-slate-900"
+					colorClassName="hover:text-slate-900"
 				/>
 				<TechStackList
 					icon={<TbBrandTailwind />}
 					name="Tailwind"
-					colorClassName="text-cyan-400"
+					colorClassName="hover:text-cyan-400"
 				/>
 				<TechStackList
 					icon={<TbBrandGit />}
 					name="Git"
-					colorClassName="text-orange-400"
+					colorClassName="hover:text-orange-400"
 				/>
 				<TechStackList
 					icon={<TbBrandFigma />}
 					name="Figma"
-					colorClassName="text-pink-500"
+					colorClassName="hover:text-pink-500"
 				/>
 				<TechStackList
 					icon={<TbBrandTypescript />}
 					name="TypeScript"
-					colorClassName="text-blue-300"
+					colorClassName="hover:text-blue-300"
 				/>
 				<TechStackList
 					icon={<TbBrandJavascript />}
 					name="JavaScript"
-					colorClassName="text-yellow-400"
+					colorClassName="hover:text-yellow-400"
 				/>
 				<TechStackList
 					icon={<TbBrandPython />}
 					name="Python"
-					colorClassName="text-yellow-500"
+					colorClassName="hover:text-yellow-500"
 				/>
 			</div>
 		</section>
