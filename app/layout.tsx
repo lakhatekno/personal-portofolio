@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Open_Sans } from 'next/font/google';
+import { Caveat, Open_Sans } from 'next/font/google';
 import './globals.css';
 
 // Component Imports
@@ -9,6 +9,12 @@ import Footer from '@/components/layout/Footer';
 const openSans = Open_Sans({
 	variable: '--font-open-sans',
 	subsets: ['latin'],
+});
+
+const caveat = Caveat({ 
+	subsets: ['latin'], 
+	weight: ['400', '700'], 
+	variable: '--font-caveat' 
 });
 
 export const metadata: Metadata = {
@@ -23,13 +29,11 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en">
-			<body className={`${openSans.variable} antialiased bg-gradient-to-br from-purple-900 to-slate-800 w-11/12 md:4/5 mx-auto`}>
-        <Header />
-        <main className='h-full'>
-          {children}
-        </main>
+			<body className={`${openSans.variable} ${caveat.variable} antialiased bg-gradient-to-br from-purple-900 to-slate-800 w-11/12 md:4/5 mx-auto`}>
+				<Header />
+				<main className="h-full">{children}</main>
 				<Footer />
-      </body>
+			</body>
 		</html>
 	);
 }
