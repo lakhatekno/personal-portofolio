@@ -1,7 +1,9 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 @theme inline {
   --font-sans: var(--font-open-sans);
+  --font-caveat: var(--font-caveat);
 }
 
 html {

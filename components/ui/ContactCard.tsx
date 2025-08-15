@@ -11,11 +11,14 @@ type ContactCardProps = {
 
 export default function ContactCard({ icon, provider, link, contact }: ContactCardProps) {
 	return (
-		<div
+		<Link
+			href={link ? link : '/'}
 			className="
       flex w-full md:w-fit items-center justify-between gap-4 p-4 
       border border-slate-100 bg-transparent backdrop-blur-lg rounded-lg 
-      shadow-md lg:shadow-lg shadow-cyan-500/40 cursor-default"
+      shadow-md lg:shadow-lg shadow-cyan-500/40 group cursor-pointer"
+			target={link ? '_blank' : '_self'}
+			rel="noopener noreferrer"
 		>
 			<div className="flex items-center gap-4">
 				<div className="text-2xl text-cyan-500">{icon}</div>
@@ -29,17 +32,14 @@ export default function ContactCard({ icon, provider, link, contact }: ContactCa
 					</p>
 				</div>
 			</div>
-			<Link
-				href={link ? link : '/'}
+			<div
 				className="
           justify-self-end text-cyan-500 break-all transition-all scale-150
-          hover:scale-[1.75] hover:-rotate-12 hover:drop-shadow-sm hover:drop-shadow-cyan-500/50
+          group-hover:scale-[1.75] group-hover:-rotate-12 group-hover:drop-shadow-sm group-hover:drop-shadow-cyan-500/50
         "
-				target={link ? '_blank' : '_self'}
-				rel="noopener noreferrer"
 			>
 				<LuSquareArrowRight />
-			</Link>
-		</div>
+			</div>
+		</Link>
 	);
 }

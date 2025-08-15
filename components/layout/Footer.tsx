@@ -3,7 +3,7 @@ import { TbBrandNextjs } from 'react-icons/tb';
 
 export default function Footer() {
 	return (
-		<footer className="font-light text-slate-100 text-center h-32 flex items-center justify-center gap-1 cursor-default">
+		<footer className="font-light text-slate-100 text-center h-32 flex items-center justify-center flex-wrap gap-1 cursor-default">
 			<p>
 				by{' '}
 				<Link
@@ -19,6 +19,10 @@ export default function Footer() {
 				<TbBrandNextjs />
 				NextJS
 			</span>
+			<p>
+				affiliated with 
+				<Link href={'https://contsoldev.com'} className='font-bold text-cyan-500 hover:underline hover:text-cyan-400 transition-all'> Cont Solutions Indonesia</Link>
+			</p>
 		</footer>
 	);
 }
