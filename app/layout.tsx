@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
-import { Caveat, Open_Sans } from 'next/font/google';
+import { Caveat, Nunito } from 'next/font/google';
 import './globals.css';
 
 // Component Imports
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 
-const openSans = Open_Sans({
+const openSans = Nunito({
 	variable: '--font-open-sans',
 	subsets: ['latin'],
 });
@@ -29,9 +29,9 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en">
-			<body className={`${openSans.variable} ${caveat.variable} antialiased bg-gradient-to-br from-purple-900 to-slate-800 w-11/12 md:4/5 mx-auto`}>
+			<body className={`${openSans.variable} ${caveat.variable} antialiased bg-gradient-to-br from-purple-950 to-slate-900 w-11/12 md:4/5 mx-auto`}>
 				<Header />
-				<main className="h-full">{children}</main>
+				<main className="h-full font-sans cursor-default">{children}</main>
 				<Footer />
 			</body>
 		</html>
