@@ -21,7 +21,6 @@ export default function Projects() {
               aria-label={`View details for ${project.projectTitle}`}
             >
               <HomeProjectCard
-                imgPath={project.imgPath}
                 projectTitle={project.projectTitle}
                 projectDescription={project.projectDescription}
                 techStacks={project.techStacks}

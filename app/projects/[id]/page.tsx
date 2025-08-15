@@ -1,4 +1,3 @@
-// import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -10,9 +9,7 @@ import { projectData } from '@/src/data/projects-data';
 import StackBadge from '@/components/ui/StackBadge';
 
 type ProjectDetailPageProps = {
-  params: {
-    id: string;
-  };
+  params: Promise<{ id: string }>
 };
 
 export async function generateStaticParams() {
@@ -21,18 +18,14 @@ export async function generateStaticParams() {
   }));
 }
 
-export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
-  const projectId = parseInt(params.id, 10);
+export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
+  const { id } = await params;
+  const projectId = parseInt(id, 10);
   const project = projectData.find((p) => p.id === projectId);
 
   if (!project) {
     notFound();
   }
-
-  // const displayImgPath =
-  //   project.imgPath && project.imgPath.trim() !== ''
-  //     ? project.imgPath
-  //     : '/images/placeholder.png';
 
   return (
     <section className="min-h-svh flex flex-col items-center px-4 sm:px-8 md:px-16 lg:px-24 py-20 text-slate-100">
@@ -47,17 +40,6 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
         </Link>
 
         <article className="bg-slate-800 rounded-lg shadow-lg shadow-slate-900 overflow-hidden">
-          {/* Project Image */}
-          {/* <div className="w-full h-64 sm:h-80 md:h-96 relative">
-            <Image
-              src={displayImgPath}
-              alt={`${project.projectTitle} cover image`}
-              fill
-              style={{ objectFit: 'cover' }}
-              priority
-            />
-          </div> */}
-
           <div className="p-6 sm:p-8 md:p-10">
             {/* Header */}
             <header className="mb-6 border-b border-slate-700 pb-4">
