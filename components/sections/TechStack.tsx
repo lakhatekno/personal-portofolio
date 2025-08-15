@@ -10,13 +10,14 @@ import {
   TbBrandJavascript,
   TbBrandPython,
   TbBrandNextjs,
+	TbBrandOpenai,
 } from 'react-icons/tb';
 
 import TechStackList from '../ui/TechStackList';
 
 export default function TechStack() {
 	return (
-		<section className="flex flex-col">
+		<section className="flex flex-col mt-8">
 			<div className="text-3xl font-bold text-slate-100 flex gap-4 items-center justify-center">
 				<Gamepad className="scale-150 text-cyan-500 rotate-12" />
 				<h2>Tools & Stacks</h2>
@@ -71,6 +72,11 @@ export default function TechStack() {
 					icon={<TbBrandPython />}
 					name="Python"
 					colorClassName="hover:text-yellow-500"
+				/>
+				<TechStackList
+					icon={<TbBrandOpenai />}
+					name="OpenAI API"
+					colorClassName="hover:text-green-300"
 				/>
 			</div>
 		</section>
