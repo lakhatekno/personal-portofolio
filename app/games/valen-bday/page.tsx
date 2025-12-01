@@ -2,14 +2,14 @@
 
 import React, { useState } from 'react';
 import { useFilterCamera, CameraConfig } from '@/lib/useFilterCamera';
-import { FaCamera, FaSpinner } from 'react-icons/fa';
+import { FaCamera, FaSpinner, FaExchangeAlt } from 'react-icons/fa';
 
 // --- Configuration ---
 const CONFIG: CameraConfig = {
   modelUrl: '/models',
   referenceImages: [
     '/images/orang-a-1.jpg',
-    '/images/orang-a-2.jpeg', // Assuming jpeg based on your info
+    '/images/orang-a-2.jpeg',
     '/images/orang-a-3.jpg',
   ],
   maskImages: {
@@ -20,8 +20,11 @@ const CONFIG: CameraConfig = {
 };
 
 export default function ValenBdayPage() {
+  const [isMirrored, setIsMirrored] = useState(true); // Default to mirror for selfie feel
   const [triggerFlash, setTriggerFlash] = useState(false);
-  const { videoRef, canvasRef, status, isReady, capturePhoto } = useFilterCamera(CONFIG);
+  
+  // Pass mirror state to hook
+  const { videoRef, canvasRef, status, isReady, capturePhoto } = useFilterCamera(CONFIG, isMirrored);
 
   const handleCapture = () => {
     setTriggerFlash(true);
@@ -29,54 +32,74 @@ export default function ValenBdayPage() {
     setTimeout(() => setTriggerFlash(false), 150);
   };
 
+  const toggleMirror = () => {
+    setIsMirrored(prev => !prev);
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center p-4">
+    <div className="flex flex-col items-center justify-center min-h-5/6 p-4">
       
       {/* Header */}
-      <div className="mb-6 text-center">
+      <div className="my-6 text-center">
         <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-500 bg-clip-text text-transparent">
-          
+          Its Valen's Bday, everyone!
         </h1>
       </div>
 
-      {/* Camera Container (Card) */}
-      <div className="relative w-full max-w-2xl bg-black rounded-3xl overflow-hidden shadow-2xl border border-zinc-800 ring-4 ring-zinc-900">
+      {/* Main Container: Flex Row for Desktop, Col for Mobile */}
+      <div className="flex flex-col md:flex-row gap-6 items-center justify-center w-full max-w-5xl">
         
-        {/* Wrapper to maintain aspect ratio logic if needed, or just relative stacking */}
-        <div className="relative w-full aspect-video bg-zinc-900">
-          
-          <video
-            ref={videoRef}
-            muted
-            playsInline
-            className="absolute top-0 left-0 w-full h-full object-cover transform -scale-x-100" // Mirror effect
-          />
-          
-          <canvas
-            ref={canvasRef}
-            className="absolute top-0 left-0 w-full h-full object-cover transform -scale-x-100" // Mirror canvas too
-          />
+        {/* --- Camera Viewport --- */}
+        <div className="relative w-full max-w-2xl bg-black rounded-3xl overflow-hidden shadow-2xl border border-zinc-800 ring-4 ring-zinc-900">
+          <div className="relative w-full aspect-video bg-zinc-900">
+            
+            {/* Video: Apply CSS transform based on state */}
+            <video
+              ref={videoRef}
+              muted
+              playsInline
+              className={`absolute top-0 left-0 w-full h-full object-cover transition-transform duration-300 ${isMirrored ? 'transform -scale-x-100' : ''}`} 
+            />
+            
+            {/* Canvas: NEVER mirror with CSS. We handle coordinates in JS to keep text readable. */}
+            <canvas
+              ref={canvasRef}
+              className="absolute top-0 left-0 w-full h-full object-cover" 
+            />
 
-          {/* Loading Overlay */}
-          {!isReady && (
-            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-zinc-900/90 backdrop-blur-sm transition-opacity duration-500">
-              <FaSpinner className="text-4xl text-purple-500 animate-spin mb-4" />
-              <p className="text-white font-medium tracking-wide animate-pulse">
-                {status}
-              </p>
-            </div>
-          )}
+            {/* Loading Overlay */}
+            {!isReady && (
+              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-zinc-900/90 backdrop-blur-sm transition-opacity duration-500">
+                <FaSpinner className="text-4xl text-purple-500 animate-spin mb-4" />
+                <p className="text-white font-medium tracking-wide animate-pulse">
+                  {status}
+                </p>
+              </div>
+            )}
 
-          {/* Flash Effect */}
-          <div 
-            className={`absolute inset-0 bg-white z-30 pointer-events-none transition-opacity duration-150 ease-out ${
-              triggerFlash ? 'opacity-100' : 'opacity-0'
-            }`} 
-          />
+            {/* Flash Effect */}
+            <div 
+              className={`absolute inset-0 bg-white z-30 pointer-events-none transition-opacity duration-150 ease-out ${
+                triggerFlash ? 'opacity-100' : 'opacity-0'
+              }`} 
+            />
+          </div>
         </div>
 
-        {/* Controls Bar */}
-        <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black/80 to-transparent flex justify-center items-end z-10">
+        {/* --- Controls Sidebar --- */}
+        <div className="flex flex-row md:flex-col gap-6 items-center justify-center p-4">
+          
+          {/* Mirror Toggle Button */}
+          <button
+            onClick={toggleMirror}
+            disabled={!isReady}
+            className="w-12 h-12 rounded-full bg-zinc-800 hover:bg-zinc-700 text-white flex items-center justify-center shadow-lg transition-all active:scale-95 border border-zinc-700"
+            title="Mirror Camera"
+          >
+            <FaExchangeAlt className={`text-lg transition-transform duration-300 ${isMirrored ? 'rotate-180' : ''}`} />
+          </button>
+
+          {/* Shutter Button */}
           <button
             onClick={handleCapture}
             disabled={!isReady}
@@ -84,17 +107,17 @@ export default function ValenBdayPage() {
             aria-label="Take Photo"
           >
             {/* Button Outer Ring */}
-            <div className="w-16 h-16 rounded-full border-4 border-white/30 group-hover:border-white transition-all duration-300 absolute" />
+            <div className="w-20 h-20 rounded-full border-4 border-white/30 group-hover:border-white transition-all duration-300 absolute" />
             
             {/* Button Inner Circle */}
-            <div className="w-12 h-12 bg-white rounded-full text-zinc-900 flex items-center justify-center shadow-lg transform group-active:scale-90 transition-transform duration-200">
-              <FaCamera className="text-xl" />
+            <div className="w-16 h-16 bg-white rounded-full text-zinc-900 flex items-center justify-center shadow-lg transform group-active:scale-90 transition-transform duration-200">
+              <FaCamera className="text-2xl" />
             </div>
           </button>
         </div>
+
       </div>
 
-      {/* Footer / Instructions */}
       <div className="mt-8 text-center max-w-md">
         <p className="text-zinc-500 text-xs">
           Ensure you are in a well-lit area.
