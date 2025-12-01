@@ -26,26 +26,33 @@ export default function ValenBdayPage() {
 
   // Confetti State
   const [showConfetti, setShowConfetti] = useState(false); // Controls visibility/rendering
+  const [recycleConfetti, setRecycleConfetti] = useState(true); // Controls if it keeps raining
   const [hasFiredConfetti, setHasFiredConfetti] = useState(false); // Lock to ensure it only happens once
   
   // Pass mirror state to hook
   const { videoRef, canvasRef, status, isReady, capturePhoto, isPersonFound } = useFilterCamera(CONFIG, isMirrored);
 
   // --- Confetti Logic ---
+  // --- Logic 1: Trigger the Celebration ---
   useEffect(() => {
-    if (isPersonFound && !hasFiredConfetti) {
-      // 1. Trigger Confetti
-      setShowConfetti(true);
-      setHasFiredConfetti(true);
+    // Only fire if found, haven't fired yet, and isReady
+    if (isPersonFound && !hasFiredConfetti && isReady) {
+      setHasFiredConfetti(true);   // Lock it
+      setShowConfetti(true);       // Mount component
+      setRecycleConfetti(true);    // Start raining
+    }
+  }, [isPersonFound, hasFiredConfetti, isReady]);
 
-      // 2. Stop Confetti after 3 seconds
+  // --- Logic 2: Stop the Rain (The Timer) ---
+  useEffect(() => {
+    if (recycleConfetti && showConfetti) {
       const timer = setTimeout(() => {
-        setShowConfetti(false);
-      }, 3000);
+        setRecycleConfetti(false); // Gracefully stop generating new pieces
+      }, 4500);
 
       return () => clearTimeout(timer);
     }
-  }, [isPersonFound, hasFiredConfetti]);
+  }, [recycleConfetti, showConfetti]);
 
   const resetConfetti = () => {
     setHasFiredConfetti(false);
@@ -63,22 +70,28 @@ export default function ValenBdayPage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-5/6 p-4">
+    <div className="flex flex-col items-center justify-center min-h-screen p-4">
       
       {/* Confetti Overlay */}
       {showConfetti && (
         <ReactConfetti
           width={typeof window !== 'undefined' ? window.innerWidth : 1000}
           height={typeof window !== 'undefined' ? window.innerHeight : 1000}
-          recycle={true} // Keep generating particles during the 3s window
-          numberOfPieces={300}
+          recycle={recycleConfetti}
+          numberOfPieces={350}
+          onConfettiComplete={(confetti) => {
+            // Optional: Unmount completely when all particles are off-screen
+            setShowConfetti(false);
+            confetti?.reset();
+          }}
+          style={{ position: 'fixed', pointerEvents: 'none', zIndex: 50 }}
         />
       )}
 
       {/* Header */}
-      <div className="my-6 text-center">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-500 bg-clip-text text-transparent">
-          Its Valen's Bday, everyone!
+      <div className="mb-6 text-center">
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-stone-200 to-cyan-300 bg-clip-text text-transparent">
+          Its <span className='bg-gradient-to-b from-pink-200 to bg-pink-500 bg-clip-text font-semibold'>Valen</span>'s Bday, everyone!
         </h1>
       </div>
 
