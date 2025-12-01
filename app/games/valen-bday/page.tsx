@@ -48,7 +48,7 @@ export default function ValenBdayPage() {
     if (recycleConfetti && showConfetti) {
       const timer = setTimeout(() => {
         setRecycleConfetti(false); // Gracefully stop generating new pieces
-      }, 4500);
+      }, 7500);
 
       return () => clearTimeout(timer);
     }

@@ -24,6 +24,9 @@ export const useFilterCamera = (config: CameraConfig, isMirrored: boolean) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
+  // NEW: Ref to hold the active stream so we can stop it later
+  const streamRef = useRef<MediaStream | null>(null);
+
   // We use a ref for mirroring inside the loop to avoid dependency staleness
   const isMirroredRef = useRef(isMirrored); 
   
@@ -77,7 +80,15 @@ export const useFilterCamera = (config: CameraConfig, isMirrored: boolean) => {
     };
 
     loadResources();
-    return () => { isMounted = false; };
+    return () => { 
+      isMounted = false; 
+
+      // Stop all video tracks (Turns off the webcam light)
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+      }
+    };
   }, []);
 
   // --- 2. One-Shot Learning ---
@@ -105,6 +116,10 @@ export const useFilterCamera = (config: CameraConfig, isMirrored: boolean) => {
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { width: 1280, height: 720 } 
       });
+
+      // Save stream to ref for cleanup
+      streamRef.current = stream;
+      
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         videoRef.current.onloadedmetadata = () => videoRef.current?.play();
