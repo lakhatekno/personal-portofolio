@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useFilterCamera, CameraConfig } from '@/lib/useFilterCamera';
-import { FaCamera, FaSpinner, FaExchangeAlt } from 'react-icons/fa';
+import { FaCamera, FaSpinner, FaExchangeAlt, FaRedo } from 'react-icons/fa';
+import ReactConfetti from 'react-confetti';
 
 // --- Configuration ---
 const CONFIG: CameraConfig = {
@@ -22,9 +23,34 @@ const CONFIG: CameraConfig = {
 export default function ValenBdayPage() {
   const [isMirrored, setIsMirrored] = useState(true); // Default to mirror for selfie feel
   const [triggerFlash, setTriggerFlash] = useState(false);
+
+  // Confetti State
+  const [showConfetti, setShowConfetti] = useState(false); // Controls visibility/rendering
+  const [hasFiredConfetti, setHasFiredConfetti] = useState(false); // Lock to ensure it only happens once
   
   // Pass mirror state to hook
-  const { videoRef, canvasRef, status, isReady, capturePhoto } = useFilterCamera(CONFIG, isMirrored);
+  const { videoRef, canvasRef, status, isReady, capturePhoto, isPersonFound } = useFilterCamera(CONFIG, isMirrored);
+
+  // --- Confetti Logic ---
+  useEffect(() => {
+    if (isPersonFound && !hasFiredConfetti) {
+      // 1. Trigger Confetti
+      setShowConfetti(true);
+      setHasFiredConfetti(true);
+
+      // 2. Stop Confetti after 3 seconds
+      const timer = setTimeout(() => {
+        setShowConfetti(false);
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isPersonFound, hasFiredConfetti]);
+
+  const resetConfetti = () => {
+    setHasFiredConfetti(false);
+    setShowConfetti(false);
+  };
 
   const handleCapture = () => {
     setTriggerFlash(true);
@@ -39,6 +65,16 @@ export default function ValenBdayPage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-5/6 p-4">
       
+      {/* Confetti Overlay */}
+      {showConfetti && (
+        <ReactConfetti
+          width={typeof window !== 'undefined' ? window.innerWidth : 1000}
+          height={typeof window !== 'undefined' ? window.innerHeight : 1000}
+          recycle={true} // Keep generating particles during the 3s window
+          numberOfPieces={300}
+        />
+      )}
+
       {/* Header */}
       <div className="my-6 text-center">
         <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-500 bg-clip-text text-transparent">
@@ -97,6 +133,20 @@ export default function ValenBdayPage() {
             title="Mirror Camera"
           >
             <FaExchangeAlt className={`text-lg transition-transform duration-300 ${isMirrored ? 'rotate-180' : ''}`} />
+          </button>
+
+          {/* Reset Confetti Button */}
+          <button
+            onClick={resetConfetti}
+            disabled={!hasFiredConfetti} 
+            className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-95 border border-zinc-700 ${
+              hasFiredConfetti 
+                ? 'bg-yellow-600 hover:bg-yellow-500 text-white cursor-pointer' 
+                : 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
+            }`}
+            title="Reset Confetti"
+          >
+            <FaRedo className={`text-lg ${!hasFiredConfetti ? 'opacity-50' : ''}`} />
           </button>
 
           {/* Shutter Button */}

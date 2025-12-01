@@ -30,6 +30,12 @@ export const useFilterCamera = (config: CameraConfig, isMirrored: boolean) => {
   const [isModelLoaded, setIsModelLoaded] = useState(false);
   const [status, setStatus] = useState<string>('Initializing...');
   const [isReady, setIsReady] = useState(false);
+
+  // NEW: State to expose detection status to the Page
+  const [isPersonFound, setIsPersonFound] = useState(false);
+  // NEW: Ref to track detection inside the setInterval closure to avoid re-render floods
+  const isPersonFoundRef = useRef(false);
+
   const [faceMatcher, setFaceMatcher] = useState<faceapi.FaceMatcher | null>(null);
   
   const imgRefA = useRef<HTMLImageElement | null>(null);
@@ -152,12 +158,20 @@ export const useFilterCamera = (config: CameraConfig, isMirrored: boolean) => {
           detectionState.missingFrames++;
         }
 
+        // Track if Person A is seen in this specific frame
+        let personASeenInFrame = false;
+
         // Draw Logic
         renderList.forEach(detection => {
           const { descriptor } = detection;
           const box = detection.detection.box;
           const match = faceMatcher.findBestMatch(descriptor);
           const isPersonA = match.label === 'Person A';
+
+          if (isPersonA) {
+            personASeenInFrame = true;
+          }
+
           const overlayImg = isPersonA ? imgRefA.current : imgRefB.current;
           
           if (overlayImg) {
@@ -184,6 +198,14 @@ export const useFilterCamera = (config: CameraConfig, isMirrored: boolean) => {
              }
           }
         });
+
+        // Update State Logic: 
+        // Only update React state if the detection status actually CHANGED compared to our Ref.
+        // This prevents re-rendering the Page component 30 times a second.
+        if (personASeenInFrame !== isPersonFoundRef.current) {
+          isPersonFoundRef.current = personASeenInFrame;
+          setIsPersonFound(personASeenInFrame);
+        }
 
       }, 33);
     };
@@ -233,5 +255,5 @@ export const useFilterCamera = (config: CameraConfig, isMirrored: boolean) => {
     }
   }, []);
 
-  return { videoRef, canvasRef, status, isReady, capturePhoto };
+  return { videoRef, canvasRef, status, isReady, capturePhoto, isPersonFound };
 };
