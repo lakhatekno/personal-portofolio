@@ -367,7 +367,6 @@ export const useFilterCamera = (config: CameraConfig, isMirrored: boolean) => {
 
   // --- 4. Main Loop ---
   useEffect(() => {
-    // FIX: Removed `!faceMatcher` from the guard. Loop runs even if recognition fails.
     if (!isModelLoaded || !videoRef.current || !canvasRef.current) return;
 
     const video = videoRef.current;
@@ -387,108 +386,125 @@ export const useFilterCamera = (config: CameraConfig, isMirrored: boolean) => {
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
-        // A. Face Detection
-        let resizedDetections: any = [];
-        try {
-            // We still try to detect faces
-            const detections = await faceapi.detectAllFaces(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.4 }))
-            .withFaceLandmarks().withFaceDescriptors();
-            resizedDetections = faceapi.resizeResults(detections, displaySize);
-        } catch (e) {
-            // Silently fail detection frame if busy
-        }
-
+        // Reset canvas di awal loop
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // B. Draw Face Masks
-        let renderList = [];
-        if (resizedDetections.length > 0) {
-          renderList = resizedDetections;
-          detectionState.lastDetections = resizedDetections;
-          detectionState.missingFrames = 0;
-        } else if (detectionState.missingFrames < MAX_MISSING_FRAMES && detectionState.lastDetections.length > 0) {
-          renderList = detectionState.lastDetections;
-          detectionState.missingFrames++;
-        }
-
-        let personASeenInFrame = false;
-
-        renderList.forEach((detection: { detection?: any; descriptor?: any; }) => {
-          const { descriptor } = detection;
-          const box = detection.detection.box;
-          
-          let isPersonA = false;
-          // Only check match if matcher exists
-          if (faceMatcher) {
-              const match = faceMatcher.findBestMatch(descriptor);
-              if (match.label === 'Person A') isPersonA = true;
-          } else {
-              // Fallback if no matcher: Treat everyone as 'others' or 'Person A' depending on preference?
-              // Let's default to false (Others)
+        // --- A. Face Detection & Masking ---
+        try {
+          let resizedDetections: any = [];
+          try {
+            // Deteksi semua wajah dengan opsi confidence lebih rendah agar tracking lebih mulus
+            const detections = await faceapi.detectAllFaces(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.35 }))
+              .withFaceLandmarks()
+              .withFaceDescriptors();
+              
+            resizedDetections = faceapi.resizeResults(detections, displaySize);
+          } catch (e) {
+            // Ignore detection error, use fallback
           }
 
-          if (isPersonA) personASeenInFrame = true;
-
-          const overlayImg = isPersonA ? imgRefA.current : imgRefB.current;
-          
-          // Ensure image is actually loaded (naturalWidth > 0)
-          if (overlayImg && overlayImg.naturalWidth > 0) {
-             const scaleWidth = 1.5;
-             const drawWidth = box.width * scaleWidth;
-             const ratio = overlayImg.naturalWidth / overlayImg.naturalHeight;
-             if (ratio) {
-               const drawHeight = drawWidth / ratio;
-               let drawX = box.x + (box.width / 2) - (drawWidth / 2);
-               if (isMirroredRef.current) {
-                 drawX = canvas.width - drawX - drawWidth;
-               }
-               const drawY = box.y - drawHeight + (box.height * 0.6); 
-               ctx.drawImage(overlayImg, drawX, drawY, drawWidth, drawHeight);
-             }
+          let renderList = [];
+          if (resizedDetections.length > 0) {
+            renderList = resizedDetections;
+            detectionState.lastDetections = resizedDetections;
+            detectionState.missingFrames = 0;
+          } else if (detectionState.missingFrames < MAX_MISSING_FRAMES && detectionState.lastDetections.length > 0) {
+            renderList = detectionState.lastDetections;
+            detectionState.missingFrames++;
           }
-        });
 
-        if (personASeenInFrame !== isPersonFoundRef.current) {
-          isPersonFoundRef.current = personASeenInFrame;
-          setIsPersonFound(personASeenInFrame);
-        }
+          let personASeenInFrame = false;
 
-        // C. Draw Stickers
-        stickersRef.current.forEach(sticker => {
-          ctx.save();
-          const cx = sticker.x + sticker.width / 2;
-          const cy = sticker.y + sticker.height / 2;
-          ctx.translate(cx, cy);
-          ctx.rotate(sticker.rotation);
-          
-          // Draw Image
-          ctx.drawImage(sticker.img, -sticker.width / 2, -sticker.height / 2, sticker.width, sticker.height);
-          
-          // Selection UI
-          if (sticker.id === selectedStickerIdRef.current) {
-            ctx.strokeStyle = '#00FFFF';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(-sticker.width / 2, -sticker.height / 2, sticker.width, sticker.height);
+          renderList.forEach((detection: { detection?: any; descriptor?: any; }) => {
+            const { descriptor } = detection;
+            const box = detection.detection.box;
             
-            // 1. Rotation Handle (Top)
-            ctx.beginPath();
-            ctx.moveTo(0, -sticker.height / 2);
-            ctx.lineTo(0, -sticker.height / 2 - 30);
-            ctx.stroke();
+            let isPersonA = false;
+            
+            // Perbaikan: Pastikan descriptor ada sebelum match agar tidak crash
+            if (faceMatcher && descriptor) {
+              try {
+                const match = faceMatcher.findBestMatch(descriptor);
+                if (match.label === 'Person A') isPersonA = true;
+              } catch (err) {
+                // Handle match error
+              }
+            }
 
-            ctx.fillStyle = '#FFFFFF';
-            ctx.beginPath();
-            ctx.arc(0, -sticker.height / 2 - 30, 6, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.stroke();
+            if (isPersonA) personASeenInFrame = true;
 
-            // 2. Resize Handle (Bottom Right)
-            // Position: (width/2, height/2)
-            ctx.fillStyle = '#00FFFF'; // Cyan square
-            ctx.fillRect((sticker.width / 2) - 8, (sticker.height / 2) - 8, 16, 16);
+            const overlayImg = isPersonA ? imgRefA.current : imgRefB.current;
+            
+            if (overlayImg && overlayImg.naturalWidth > 0) {
+               const scaleWidth = 1.5; // Bisa disesuaikan
+               const drawWidth = box.width * scaleWidth;
+               const ratio = overlayImg.naturalWidth / overlayImg.naturalHeight;
+               if (ratio) {
+                 const drawHeight = drawWidth / ratio;
+                 // Center the mask
+                 let drawX = box.x + (box.width / 2) - (drawWidth / 2);
+                 
+                 // Handle mirroring logic for mask ONLY
+                 if (isMirroredRef.current) {
+                   drawX = canvas.width - drawX - drawWidth;
+                 }
+                 
+                 const drawY = box.y - drawHeight + (box.height * 0.6); 
+                 ctx.drawImage(overlayImg, drawX, drawY, drawWidth, drawHeight);
+               }
+            }
+          });
+
+          if (personASeenInFrame !== isPersonFoundRef.current) {
+            isPersonFoundRef.current = personASeenInFrame;
+            setIsPersonFound(personASeenInFrame);
           }
-          ctx.restore();
-        });
+        } catch (error) {
+           console.error("Mask Render Error:", error);
+           // Error di mask jangan hentikan sticker
+        }
+
+        // --- B. Draw Stickers (Separated Try/Catch) ---
+        try {
+            stickersRef.current.forEach(sticker => {
+                ctx.save();
+                const cx = sticker.x + sticker.width / 2;
+                const cy = sticker.y + sticker.height / 2;
+                ctx.translate(cx, cy);
+                ctx.rotate(sticker.rotation);
+                
+                // Draw Image
+                if (sticker.img && sticker.img.complete) {
+                     ctx.drawImage(sticker.img, -sticker.width / 2, -sticker.height / 2, sticker.width, sticker.height);
+                }
+                
+                // Selection UI
+                if (sticker.id === selectedStickerIdRef.current) {
+                    ctx.strokeStyle = '#00FFFF';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(-sticker.width / 2, -sticker.height / 2, sticker.width, sticker.height);
+                    
+                    // 1. Rotation Handle
+                    ctx.beginPath();
+                    ctx.moveTo(0, -sticker.height / 2);
+                    ctx.lineTo(0, -sticker.height / 2 - 30);
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.beginPath();
+                    ctx.arc(0, -sticker.height / 2 - 30, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // 2. Resize Handle
+                    ctx.fillStyle = '#00FFFF'; 
+                    ctx.fillRect((sticker.width / 2) - 8, (sticker.height / 2) - 8, 16, 16);
+                }
+                ctx.restore();
+            });
+        } catch (error) {
+             console.error("Sticker Render Error:", error);
+        }
 
       }, 33);
     };
@@ -498,7 +514,7 @@ export const useFilterCamera = (config: CameraConfig, isMirrored: boolean) => {
       clearInterval(intervalId);
       video.removeEventListener('play', startDetection);
     };
-  }, [isModelLoaded, faceMatcher]); // Loop restarts if matcher finally loads, which is fine
+  }, [isModelLoaded, faceMatcher]);
 
   // --- 5. Capture ---
   const capturePhoto = useCallback(() => {
