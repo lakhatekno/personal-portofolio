@@ -138,6 +138,11 @@ export default function ValenBdayPage() {
               className="absolute top-0 left-0 w-full h-full object-cover" 
             />
 
+            <canvas
+                ref={stickerCanvasRef}
+                className="absolute top-0 left-0 w-full h-full object-cover cursor-crosshair z-10"
+            />
+
             {/* Loading Overlay */}
             {!isReady && (
               <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-zinc-900/90 backdrop-blur-sm transition-opacity duration-500">
