@@ -215,8 +215,6 @@ export const useFilterCamera = (config: CameraConfig, isMirrored: boolean) => {
         });
 
         // Update State Logic: 
-        // Only update React state if the detection status actually CHANGED compared to our Ref.
-        // This prevents re-rendering the Page component 30 times a second.
         if (personASeenInFrame !== isPersonFoundRef.current) {
           isPersonFoundRef.current = personASeenInFrame;
           setIsPersonFound(personASeenInFrame);
@@ -231,10 +229,11 @@ export const useFilterCamera = (config: CameraConfig, isMirrored: boolean) => {
       clearInterval(intervalId);
       video.removeEventListener('play', startDetection);
     };
-  }, [isModelLoaded, faceMatcher]); // Removed isMirrored from dep array to prevent loop restart
+  }, [isModelLoaded, faceMatcher]); 
 
   // --- 5. Capture Function ---
-  const capturePhoto = useCallback(() => {
+  // Updated to support external drawing (e.g., stickers)
+  const capturePhoto = useCallback((externalDrawFn?: (ctx: CanvasRenderingContext2D, scaleX: number, scaleY: number) => void) => {
     if (!videoRef.current || !canvasRef.current) return;
     
     const video = videoRef.current;
@@ -248,7 +247,6 @@ export const useFilterCamera = (config: CameraConfig, isMirrored: boolean) => {
     if (ctx) {
       // 1. Draw Video
       if (isMirroredRef.current) {
-        // If mirrored, flip the context to draw the video backwards (like a mirror)
         ctx.save();
         ctx.translate(tempCanvas.width, 0);
         ctx.scale(-1, 1);
@@ -258,10 +256,16 @@ export const useFilterCamera = (config: CameraConfig, isMirrored: boolean) => {
         ctx.drawImage(video, 0, 0);
       }
 
-      // 2. Draw Overlay
-      // The canvas is already drawn with the correct "visual" coordinates in the loop
-      // so we just layer it on top normally.
+      // 2. Draw Face Masks (Already on canvasRef)
       ctx.drawImage(canvas, 0, 0);
+
+      // 3. Draw External Layer (Stickers) if provided
+      if (externalDrawFn) {
+        // Stickers are usually drawn on a responsive canvas which might match the video size 
+        // OR be scaled by CSS. We assume the coordinate system matches the video resolution
+        // because we initialize sticker canvas with same dims in Page logic.
+        externalDrawFn(ctx, 1, 1);
+      }
       
       const link = document.createElement('a');
       link.download = `valen-bday-${Date.now()}.png`;
