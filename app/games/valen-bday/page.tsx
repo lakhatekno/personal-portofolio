@@ -2,8 +2,11 @@
 
 import React, { useEffect, useState } from 'react';
 import { useFilterCamera, CameraConfig } from '@/lib/useFilterCamera';
+import { useStickerEditor } from '@/lib/useStickerEditor';
+import { StickerGallery } from '@/components/ui/games/StickerGallery';
 import { FaCamera, FaSpinner, FaExchangeAlt, FaRedo } from 'react-icons/fa';
 import ReactConfetti from 'react-confetti';
+import { FaTrash } from 'react-icons/fa6';
 
 // --- Configuration ---
 const CONFIG: CameraConfig = {
@@ -32,6 +35,25 @@ export default function ValenBdayPage() {
   // Pass mirror state to hook
   const { videoRef, canvasRef, status, isReady, capturePhoto, isPersonFound } = useFilterCamera(CONFIG, isMirrored);
 
+  // --- Sticker Hook ---
+  // Initialize with standard video aspect ratio (1280x720) or responsive.
+  // We use fixed 1280x720 logic for canvas mapping to match camera resolution.
+  const { 
+    stickerCanvasRef, 
+    addSticker, 
+    clearStickers, 
+    hasStickers,
+    drawStickersToContext 
+  } = useStickerEditor(1280, 720);
+
+  // Sync Sticker Canvas Size with Video Canvas
+  useEffect(() => {
+    if (isReady && canvasRef.current && stickerCanvasRef.current) {
+        stickerCanvasRef.current.width = canvasRef.current.width;
+        stickerCanvasRef.current.height = canvasRef.current.height;
+    }
+  }, [isReady]);
+
   // --- Confetti Logic ---
   // --- Logic 1: Trigger the Celebration ---
   useEffect(() => {
@@ -48,7 +70,7 @@ export default function ValenBdayPage() {
     if (recycleConfetti && showConfetti) {
       const timer = setTimeout(() => {
         setRecycleConfetti(false); // Gracefully stop generating new pieces
-      }, 4500);
+      }, 7500);
 
       return () => clearTimeout(timer);
     }
@@ -61,7 +83,7 @@ export default function ValenBdayPage() {
 
   const handleCapture = () => {
     setTriggerFlash(true);
-    capturePhoto();
+    capturePhoto(drawStickersToContext);
     setTimeout(() => setTriggerFlash(false), 150);
   };
 
@@ -116,6 +138,11 @@ export default function ValenBdayPage() {
               className="absolute top-0 left-0 w-full h-full object-cover" 
             />
 
+            <canvas
+                ref={stickerCanvasRef}
+                className="absolute top-0 left-0 w-full h-full object-cover cursor-crosshair z-10"
+            />
+
             {/* Loading Overlay */}
             {!isReady && (
               <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-zinc-900/90 backdrop-blur-sm transition-opacity duration-500">
@@ -146,6 +173,20 @@ export default function ValenBdayPage() {
             title="Mirror Camera"
           >
             <FaExchangeAlt className={`text-lg transition-transform duration-300 ${isMirrored ? 'rotate-180' : ''}`} />
+          </button>
+
+          {/* Clear Stickers Button (Only shows if stickers exist) */}
+          <button
+              onClick={clearStickers}
+              disabled={!hasStickers}
+              className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-95 border border-zinc-700 ${
+                  hasStickers 
+                      ? 'bg-red-900/50 hover:bg-red-800 text-red-200' 
+                      : 'bg-zinc-800 text-zinc-600 opacity-50 cursor-not-allowed'
+              }`}
+              title="Clear All Stickers"
+          >
+              <FaTrash className="text-sm" />
           </button>
 
           {/* Reset Confetti Button */}
@@ -180,7 +221,10 @@ export default function ValenBdayPage() {
         </div>
 
       </div>
-
+      {/* --- Sticker Gallery --- */}
+      <div className="w-fit mt-8 bg-zinc-900/50 backdrop-blur rounded-2xl border border-zinc-800 p-2">
+          <StickerGallery onAddSticker={addSticker} />
+      </div>
       <div className="mt-8 text-center max-w-md">
         <p className="text-zinc-500 text-xs">
           Ensure you are in a well-lit area.
