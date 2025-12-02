@@ -36,6 +36,8 @@ export const useFilterCamera = (config: CameraConfig, isMirrored: boolean) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  
+  // We use a ref for mirroring inside the loop to avoid dependency staleness
   const isMirroredRef = useRef(isMirrored); 
 
   // --- Sticker State (Refs for animation loop) ---
